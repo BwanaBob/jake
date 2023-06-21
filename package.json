@@ -1,0 +1,23 @@
+{
+  "name": "jake",
+  "version": "1.0.0",
+  "description": "node.js bot streaming reddit comments to a discord channel",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BwanaBob/jake.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BwanaBob/jake/issues"
+  },
+  "homepage": "https://github.com/BwanaBob/jake#readme",
+  "dependencies": {
+    "snoostorm": "^1.5.2",
+    "snoowrap": "^1.23.0"
+  }
+}
