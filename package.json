@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/BwanaBob/jake#readme",
   "dependencies": {
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.3.1",
     "snoostorm": "^1.5.2",
     "snoowrap": "^1.23.0"
   }
