@@ -62,7 +62,7 @@ comments.on("item", async comment => {
 
   const uniDate = new Date().toLocaleString();
   console.log(
-    `[${uniDate}] 💬 ${comment.subreddit.display_name} | ${comment.author.name} | ${comment.body.slice(0, 50)}`
+    `[${uniDate.padEnd(23)}] 💬 ${comment.subreddit.display_name.padEnd(15)} | ${comment.author.name.padEnd(15)} | ${comment.body.slice(0, 45)}`
   );
 });
 
@@ -96,7 +96,7 @@ submissions.on("item", async post => {
 
   const uniDate = new Date().toLocaleString();
   console.log(
-    `[${uniDate}] 📌 ${post.subreddit.display_name} | ${post.author.name} | ${post.title.slice(0, 50)}`
+    `[${uniDate.padEnd(23)}] 📌 ${post.subreddit.display_name.padEnd(15)} | ${post.author.name.padEnd(15)} | ${post.title.slice(0, 45)}`
   );
 });
 
