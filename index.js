@@ -79,7 +79,7 @@ submissions.on("item", async post => {
   if (!streamChannel) { return; }
   var postEmoji = "📌"
   if (!post.is_self){postEmoji = "🔗"}
-  if (post.post_hint == "rich:video"){postEmoji = "🎦"}
+  if (post.post_hint == "rich:video" || post.is_video == true){postEmoji = "🎦"}
   if (post.post_hint == "image"){postEmoji = "📸"}
   if (post.poll_data){postEmoji = "✅"}
 
@@ -145,19 +145,19 @@ submissions.on("item", async post => {
 });
 
 
-//events handler
-const eventsPath = path.join(__dirname, "events");
-const eventFiles = fs
-  .readdirSync(eventsPath)
-  .filter((file) => file.endsWith(".js"));
+// Discord events handler
+const discordEventsPath = path.join(__dirname, "discordEvents");
+const discordEventFiles = fs
+  .readdirSync(discordEventsPath)
+  .filter((discordFile) => discordFile.endsWith(".js"));
 
-for (const file of eventFiles) {
-  const filePath = path.join(eventsPath, file);
-  const event = require(filePath);
-  if (event.once) {
-    discordClient.once(event.name, (...args) => event.execute(...args));
+for (const discordFile of discordEventFiles) {
+  const discordFilePath = path.join(discordEventsPath, discordFile);
+  const discordEvent = require(discordFilePath);
+  if (discordEvent.once) {
+    discordClient.once(discordEvent.name, (...args) => discordEvent.execute(...args));
   } else {
-    discordClient.on(event.name, (...args) => event.execute(...args));
+    discordClient.on(discordEvent.name, (...args) => discordEvent.execute(...args));
   }
 }
 
