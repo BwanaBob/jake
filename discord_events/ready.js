@@ -8,12 +8,11 @@ module.exports = {
   execute(client) {
     var startDate = new Date();
     console.log(
-      `[${startDate.toLocaleString().padEnd(23)}] 🤖 START | Bot Logged In | ${client.user.username} (${client.user.tag})`
+      '\x1b[34m%s\x1b[0m', `[${startDate.toLocaleString().padEnd(23)}] 🤖 START | Bot Logged In | ${client.user.username} (${client.user.tag})`
     );
 
-
     client.guilds.cache.forEach((guild) => {
-      console.log(`[${startDate.toLocaleString().padEnd(23)}] 🖥️  GUILD | Guild Joined  | ${guild.name} (${guild.memberCount})`);
+      console.log('\x1b[34m%s\x1b[0m', `[${startDate.toLocaleString().padEnd(23)}] 🖥️  GUILD | Guild Joined  | ${guild.name} (${guild.memberCount})`);
     });
 
     client.user.setPresence({

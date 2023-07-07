@@ -4,7 +4,7 @@ require("dotenv").config();
 const fs = require("node:fs");
 const path = require("node:path");
 
-const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
+const { Client, GatewayIntentBits, EmbedBuilder, Collection } = require("discord.js");
 const discordClient = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -64,7 +64,7 @@ comments.on("item", async comment => {
 
   const uniDate = new Date().toLocaleString();
   console.log(
-    `[${uniDate.padEnd(23)}] 💬 ${comment.subreddit.display_name.padEnd(15)} | ${comment.author.name.padEnd(15)} | ${comment.body.slice(0, 45)}`
+    '\x1b[34m%s\x1b[0m', `[${uniDate.padEnd(23)}] 💬 ${comment.subreddit.display_name.padEnd(15)} | ${comment.author.name.padEnd(15)} | ${comment.body.slice(0, 45)}`
   );
 });
 
@@ -140,13 +140,17 @@ submissions.on("item", async post => {
 
   const uniDate = new Date().toLocaleString();
   console.log(
-    `[${uniDate.padEnd(23)}] ${postEmoji} ${post.subreddit.display_name.padEnd(15)} | ${post.author.name.padEnd(15)} | ${post.title.slice(0, 45)}`
+    '\x1b[34m%s\x1b[0m', `[${uniDate.padEnd(23)}] ${postEmoji} ${post.subreddit.display_name.padEnd(15)} | ${post.author.name.padEnd(15)} | ${post.title.slice(0, 45)}`
   );
 });
 
+// Reddit events handler - TBD
+// const redditSubmissionEvent = require("./reddit_events/submissions.js");
+// redditClient.on(discordEvent.name, (...args) => discordEvent.execute(...args));
+// submissions.on("item", async post => {
 
 // Discord events handler
-const discordEventsPath = path.join(__dirname, "discordEvents");
+const discordEventsPath = path.join(__dirname, "discord_events");
 const discordEventFiles = fs
   .readdirSync(discordEventsPath)
   .filter((discordFile) => discordFile.endsWith(".js"));
@@ -156,8 +160,33 @@ for (const discordFile of discordEventFiles) {
   const discordEvent = require(discordFilePath);
   if (discordEvent.once) {
     discordClient.once(discordEvent.name, (...args) => discordEvent.execute(...args));
+    // console.log(discordEvent.name);
   } else {
     discordClient.on(discordEvent.name, (...args) => discordEvent.execute(...args));
+    // console.log(discordEvent.name);
+  }
+}
+
+
+// Slash command Collection setup
+discordClient.commands = new Collection();
+const commandsPath = path.join(__dirname, "discord_commands");
+const commandFiles = fs
+  .readdirSync(commandsPath)
+  .filter((file) => file.endsWith(".js"));
+
+for (const file of commandFiles) {
+  const filePath = path.join(commandsPath, file);
+  const command = require(filePath);
+  // Set a new item in the Collection with the key as the command name and the value as the exported module
+  if ("data" in command && "execute" in command) {
+    discordClient.commands.set(command.data.name, command);
+    const cLoadedDate = new Date().toLocaleString();
+    console.log('\x1b[34m%s\x1b[0m', `[${cLoadedDate.padEnd(23)}] 💻 COMAND| Command Loaded| ${command.data.name}`)
+  } else {
+    console.log(
+      `⛔ [WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+    );
   }
 }
 
