@@ -3,7 +3,7 @@
     "submissionPollTime": 23000,
     "submissionLimit": 5,
     "commentSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",
-    "commentPollTime": 7000,
+    "commentPollTime": 17000,
     "commentLimit": 15,
     "subreddits": {
         "OnPatrolLive":    { "channelId":"1121307801453596722", "streamComments": true, "streamSubmissions": true},
