@@ -60,7 +60,8 @@ comments.on("item", async comment => {
 
   discordClient.channels.cache
     .get(streamChannel)
-    .send({ embeds: [discordEmbed] });
+    .send({ embeds: [discordEmbed] })
+    .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
 
   const uniDate = new Date().toLocaleString();
   console.log(
@@ -136,7 +137,8 @@ submissions.on("item", async post => {
   }
   discordClient.channels.cache
     .get(streamChannel)
-    .send({ embeds: [discordEmbed] });
+    .send({ embeds: [discordEmbed] })
+    .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
 
   const uniDate = new Date().toLocaleString();
   console.log(
