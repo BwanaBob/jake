@@ -65,7 +65,7 @@ comments.on("item", async comment => {
 
   const uniDate = new Date().toLocaleString();
   console.log(
-    '\x1b[34m%s\x1b[0m', `[${uniDate.padEnd(23)}] 💬 ${comment.subreddit.display_name.padEnd(15)} | ${comment.author.name.padEnd(15)} | ${comment.body.slice(0, 45)}`
+    '\x1b[34m%s\x1b[0m', `[${uniDate.padEnd(23)}] 💬 ${comment.subreddit.display_name.padEnd(15)} | ${comment.author.name.padEnd(15)} | ${comment.body.slice(0, 45).replace(/(\r?\n|\r)/gm, " ")}`
   );
 });
 
