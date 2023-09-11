@@ -78,11 +78,6 @@ submissions.on("item", async post => {
   if (connectedAt > post.created_utc) return;
   streamChannel = options.subreddits[post.subreddit.display_name].channelId || false;
   if (!streamChannel) { return; }
-  var postEmoji = "📌"
-  if (!post.is_self){postEmoji = "🔗"}
-  if (post.post_hint == "rich:video" || post.is_video == true){postEmoji = "🎦"}
-  if (post.post_hint == "image"){postEmoji = "📸"}
-  if (post.poll_data){postEmoji = "✅"}
 
   var discordEmbed = new EmbedBuilder()
   if (streamChannel == "1121273754857775114") { // bot test channel
@@ -129,12 +124,32 @@ submissions.on("item", async post => {
         value: `${post.id}`,
         inline: false,
       })
-      .setDescription(`${postEmoji}  [**${post.author.name}**](https://www.reddit.com${post.permalink})  ${post.title.slice(0, 500)}`);
   } else {
     discordEmbed = new EmbedBuilder()
       .setColor(0xea0027)
-      .setDescription(`${postEmoji}  [**${post.author.name}**](https://www.reddit.com${post.permalink})  ${post.title.slice(0, 500)}`);
   }
+
+  console.log(post);
+  var postMessage = post.title.slice(0, 300);
+  if (post.selftext) { postMessage += `\n${post.selftext.slice(0, 500)}` };
+  var postEmoji = "📌"
+  if (!post.is_self) {
+    postEmoji = "🔗";
+    if (post.post_hint !== "image") {
+      postMessage += `\n[Link](${post.url})`;
+    }
+  }
+  if (post.post_hint == "rich:video" || post.is_video == true) { postEmoji = "🎦" }
+  if (post.post_hint == "image") {
+    postEmoji = "📸";
+    discordEmbed.setImage(post.url);
+  }
+  if (post.poll_data) { postEmoji = "✅" }
+
+  if (post.thumbnail && post.thumbnail !== 'default' && post.post_hint !== "image") { discordEmbed.setThumbnail(post.thumbnail) };
+
+  discordEmbed.setDescription(`${postEmoji}  [**${post.author.name}**](https://www.reddit.com${post.permalink})  ${postMessage}`);
+
   discordClient.channels.cache
     .get(streamChannel)
     .send({ embeds: [discordEmbed] })
