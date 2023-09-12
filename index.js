@@ -129,7 +129,7 @@ submissions.on("item", async post => {
       .setColor(0xea0027)
   }
 
-  console.log(post);
+  // console.log(post);
   var postMessage = post.title.slice(0, 300);
   if (post.selftext) { postMessage += `\n${post.selftext.slice(0, 500)}` };
   var postEmoji = "📌"
@@ -146,7 +146,7 @@ submissions.on("item", async post => {
   }
   if (post.poll_data) { postEmoji = "✅" }
 
-  if (post.thumbnail && post.thumbnail !== 'default' && post.post_hint !== "image") { discordEmbed.setThumbnail(post.thumbnail) };
+  if (post.thumbnail && post.thumbnail !== 'default' && post.thumbnail !== 'self' && post.post_hint !== "image") { discordEmbed.setThumbnail(post.thumbnail) };
 
   discordEmbed.setDescription(`${postEmoji}  [**${post.author.name}**](https://www.reddit.com${post.permalink})  ${postMessage}`);
 
