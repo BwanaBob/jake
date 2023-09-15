@@ -3,6 +3,7 @@ const Snoowrap = require("snoowrap");
 require("dotenv").config();
 const fs = require("node:fs");
 const path = require("node:path");
+const options = require("./options.json");
 
 const { Client, GatewayIntentBits, EmbedBuilder, Collection } = require("discord.js");
 const discordClient = new Client({
@@ -23,20 +24,13 @@ const redditClient = new Snoowrap({
 var streamChannel = "";
 const connectedAt = Date.now() / 1000;
 
-const options = require("./options.json");
-
 async function getAvatar(username) {
-  const defaultImage = 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_7.png';
-  var returnURL = defaultImage;
+  var returnURL = 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_7.png';
   try {
     returnURL = await fetch(`https://api.reddit.com/user/${username}/about`)
       .then(response => response.json())
       .then(data => {
-        // console.log(data);
-        // console.log(data.data.snoovatar_img)
-        // console.log(data.data.icon_img.replace(/&amp;/g, '&'));
-        returnAvatar = data.data.snoovatar_img.replace(/&amp;/g, '&') || data.data.icon_img.replace(/&amp;/g, '&') || defaultImage;
-        // console.log(returnAvatar);
+        const returnAvatar = data.data.icon_img.replace(/&amp;/g, '&') || data.data.snoovatar_img.replace(/&amp;/g, '&') || defaultImage;
         return returnAvatar;
       })
   } catch (err) {
@@ -222,7 +216,6 @@ for (const discordFile of discordEventFiles) {
     // console.log(discordEvent.name);
   }
 }
-
 
 // Slash command Collection setup
 discordClient.commands = new Collection();
