@@ -25,6 +25,26 @@ const connectedAt = Date.now() / 1000;
 
 const options = require("./options.json");
 
+async function getAvatar(username) {
+  const defaultImage = 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_7.png';
+  var returnURL = defaultImage;
+  try {
+    returnURL = await fetch(`https://api.reddit.com/user/${username}/about`)
+      .then(response => response.json())
+      .then(data => {
+        // console.log(data);
+        // console.log(data.data.snoovatar_img)
+        // console.log(data.data.icon_img.replace(/&amp;/g, '&'));
+        returnAvatar = data.data.snoovatar_img.replace(/&amp;/g, '&') || data.data.icon_img.replace(/&amp;/g, '&') || defaultImage;
+        // console.log(returnAvatar);
+        return returnAvatar;
+      })
+  } catch (err) {
+    console.error(err);
+  }
+  return returnURL;
+}
+
 const comments = new CommentStream(redditClient, {
   subreddit: options.commentSubs,
   limit: options.commentLimit,
@@ -36,26 +56,36 @@ comments.on("item", async comment => {
   streamChannel = options.subreddits[comment.subreddit.display_name].channelId || false;
   if (!streamChannel) { return; }
   var discordEmbed = new EmbedBuilder()
-  if (streamChannel === "1121273754857775114") {
+  const avatarURL = await getAvatar(comment.author.name);
+  if (streamChannel == "1121273754857775114") {
     // bot test channel
     // console.log(JSON.stringify(comment.author.pref_show_snoovatar))
     // console.log(comment.author_patreon_flair)
-
     discordEmbed = new EmbedBuilder()
       .setColor(0x0079d3)
-      .setTitle("Comment")
+      // .setTitle("Comment")
       .setURL(`https://www.reddit.com${comment.permalink}`)
       .setAuthor({
         name: comment.author.name,
         url: `https://www.reddit.com${comment.permalink}`,
-        iconURL: `https://styles.redditmedia.com/t5_21pumx/styles/profileIcon_snoo07765e5a-d55f-46e6-aaee-b1dc1051eda5-headshot.png?width=256&height=256&crop=256:256,smart&v=enabled&s=4ac765f4d46488e6f81b27cca652435c9645aaec`
-        //   iconURL: `${comment.author.icon_img}`,
+        iconURL: avatarURL,
       })
-      .setDescription(`💬  ${comment.body.slice(0, 500)}`);
+      // .addFields({
+      //   name: "Avatar",
+      //   value: `${avatarURL}`,
+      //   inline: true,
+      // })
+      .setDescription(`${comment.body.slice(0, 500)}`);
   } else {
     discordEmbed = new EmbedBuilder()
       .setColor(0x0079d3)
-      .setDescription(`💬  [**${comment.author.name}**](https://www.reddit.com${comment.permalink})  ${comment.body.slice(0, 500)}`);
+      .setURL(`https://www.reddit.com${comment.permalink}`)
+      .setAuthor({
+        name: comment.author.name,
+        url: `https://www.reddit.com${comment.permalink}`,
+        iconURL: avatarURL,
+      })
+      .setDescription(`${comment.body.slice(0, 500)}`);
   }
 
   discordClient.channels.cache
@@ -63,6 +93,7 @@ comments.on("item", async comment => {
     .send({ embeds: [discordEmbed] })
     .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
 
+  // console.log(comment.author.name);
   const uniDate = new Date().toLocaleString();
   console.log(
     '\x1b[34m%s\x1b[0m', `[${uniDate.padEnd(23)}] 💬 ${comment.subreddit.display_name.padEnd(15)} | ${comment.author.name.padEnd(15)} | ${comment.body.slice(0, 45).replace(/(\r?\n|\r)/gm, " ")}`
@@ -80,57 +111,65 @@ submissions.on("item", async post => {
   if (!streamChannel) { return; }
 
   var discordEmbed = new EmbedBuilder()
+  const avatarURL = await getAvatar(post.author.name);
   if (streamChannel == "1121273754857775114") { // bot test channel
     // console.log(post);
     discordEmbed = new EmbedBuilder()
       .setColor(0xea0027)
+      .setURL(`https://www.reddit.com${post.permalink}`)
       .setAuthor({
         name: `${post.author.name}`,
-        iconURL: `https://styles.redditmedia.com/t5_21pumx/styles/profileIcon_snoo07765e5a-d55f-46e6-aaee-b1dc1051eda5-headshot.png?width=256&height=256&crop=256:256,smart&v=enabled&s=4ac765f4d46488e6f81b27cca652435c9645aaec`
-        // iconURL: `${post.author.icon_img}`,
+        url: `https://www.reddit.com${post.permalink}`,
+        iconURL: avatarURL
       })
-      .addFields({
-        name: "Self",
-        value: `${post.is_self}`,
-        inline: true,
-      })
-      .addFields({
-        name: "Original",
-        value: `${post.is_original_content}`,
-        inline: true,
-      })
-      .addFields({
-        name: "Video",
-        value: `${post.is_video}`,
-        inline: true,
-      })
-      .addFields({
-        name: "Meta",
-        value: `${post.is_meta}`,
-        inline: true,
-      })
-      .addFields({
-        name: "post hint",
-        value: `${post.post_hint || "none"}`,
-        inline: true,
-      })
-      .addFields({
-        name: "Categories",
-        value: `${post.content_categories || "none"}`,
-        inline: false,
-      })
-      .addFields({
-        name: "Id",
-        value: `${post.id}`,
-        inline: false,
-      })
+      // .addFields({
+      //   name: "Self",
+      //   value: `${post.is_self}`,
+      //   inline: true,
+      // })
+      // .addFields({
+      //   name: "Original",
+      //   value: `${post.is_original_content}`,
+      //   inline: true,
+      // })
+      // .addFields({
+      //   name: "Video",
+      //   value: `${post.is_video}`,
+      //   inline: true,
+      // })
+      // .addFields({
+      //   name: "Meta",
+      //   value: `${post.is_meta}`,
+      //   inline: true,
+      // })
+      // .addFields({
+      //   name: "post hint",
+      //   value: `${post.post_hint || "none"}`,
+      //   inline: true,
+      // })
+      // .addFields({
+      //   name: "Categories",
+      //   value: `${post.content_categories || "none"}`,
+      //   inline: false,
+      // })
+      // .addFields({
+      //   name: "Id",
+      //   value: `${post.id}`,
+      //   inline: false,
+      // })
   } else {
     discordEmbed = new EmbedBuilder()
       .setColor(0xea0027)
+      .setURL(`https://www.reddit.com${post.permalink}`)
+      .setAuthor({
+        name: `${post.author.name}`,
+        url: `https://www.reddit.com${post.permalink}`,
+        iconURL: avatarURL
+      })
   }
 
   // console.log(post);
-  var postMessage = post.title.slice(0, 300);
+  var postMessage = `**${post.title.slice(0, 300)}**`;
   if (post.selftext) { postMessage += `\n${post.selftext.slice(0, 500)}` };
   var postEmoji = "📌"
   if (!post.is_self) {
@@ -148,7 +187,7 @@ submissions.on("item", async post => {
 
   if (post.thumbnail && post.thumbnail !== 'default' && post.thumbnail !== 'self' && post.post_hint !== "image") { discordEmbed.setThumbnail(post.thumbnail) };
 
-  discordEmbed.setDescription(`${postEmoji}  [**${post.author.name}**](https://www.reddit.com${post.permalink})  ${postMessage}`);
+  discordEmbed.setDescription(`${postEmoji}  ${postMessage}`);
 
   discordClient.channels.cache
     .get(streamChannel)
