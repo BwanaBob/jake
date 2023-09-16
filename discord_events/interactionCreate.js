@@ -20,7 +20,6 @@ module.exports = {
         log.execute({ emoji: '💻', module: 'COMMAND', feature: interaction.commandName, userName: interaction.user.username, nickname: interaction.member.nickname, message: "Private Message" });
 
       } else {
-        console.log(interaction.member);
         log.execute({ emoji: '💻', module: 'COMMAND', feature: interaction.commandName, userName: interaction.user.username, nickname: interaction.member.nickname, guild: interaction.guild.name, channel: interaction.channel.name });
       }
 
