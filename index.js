@@ -4,6 +4,7 @@ require("dotenv").config();
 const fs = require("node:fs");
 const path = require("node:path");
 const options = require("./options.json");
+const log = require("./modules/logger.js");
 
 const { Client, GatewayIntentBits, EmbedBuilder, Collection } = require("discord.js");
 const discordClient = new Client({
@@ -53,11 +54,8 @@ comments.on("item", async comment => {
   const avatarURL = await getAvatar(comment.author.name);
   if (streamChannel == "1121273754857775114") {
     // bot test channel
-    // console.log(JSON.stringify(comment.author.pref_show_snoovatar))
-    // console.log(comment.author_patreon_flair)
     discordEmbed = new EmbedBuilder()
       .setColor(0x0079d3)
-      // .setTitle("Comment")
       .setURL(`https://www.reddit.com${comment.permalink}`)
       .setAuthor({
         name: comment.author.name,
@@ -87,11 +85,8 @@ comments.on("item", async comment => {
     .send({ embeds: [discordEmbed] })
     .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
 
-  // console.log(comment.author.name);
-  const uniDate = new Date().toLocaleString();
-  console.log(
-    '\x1b[34m%s\x1b[0m', `[${uniDate.padEnd(23)}] 💬 ${comment.subreddit.display_name.padEnd(15)} | ${comment.author.name.padEnd(15)} | ${comment.body.slice(0, 45).replace(/(\r?\n|\r)/gm, " ")}`
-  );
+  log.execute({ emoji: "💬", guild: comment.subreddit.display_name, userName: comment.author.name, message: comment.body});
+
 });
 
 const submissions = new SubmissionStream(redditClient, {
@@ -107,7 +102,6 @@ submissions.on("item", async post => {
   var discordEmbed = new EmbedBuilder()
   const avatarURL = await getAvatar(post.author.name);
   if (streamChannel == "1121273754857775114") { // bot test channel
-    // console.log(post);
     discordEmbed = new EmbedBuilder()
       .setColor(0xea0027)
       .setURL(`https://www.reddit.com${post.permalink}`)
@@ -162,7 +156,6 @@ submissions.on("item", async post => {
       })
   }
 
-  // console.log(post);
   var postMessage = `**${post.title.slice(0, 300)}**`;
   if (post.selftext) { postMessage += `\n${post.selftext.slice(0, 500)}` };
   var postEmoji = "📌"
@@ -188,10 +181,8 @@ submissions.on("item", async post => {
     .send({ embeds: [discordEmbed] })
     .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
 
-  const uniDate = new Date().toLocaleString();
-  console.log(
-    '\x1b[34m%s\x1b[0m', `[${uniDate.padEnd(23)}] ${postEmoji} ${post.subreddit.display_name.padEnd(15)} | ${post.author.name.padEnd(15)} | ${post.title.slice(0, 45)}`
-  );
+  log.execute({ emoji: postEmoji, guild: post.subreddit.display_name, userName: post.author.name, message: post.title});
+ 
 });
 
 // Reddit events handler - TBD
@@ -210,10 +201,8 @@ for (const discordFile of discordEventFiles) {
   const discordEvent = require(discordFilePath);
   if (discordEvent.once) {
     discordClient.once(discordEvent.name, (...args) => discordEvent.execute(...args));
-    // console.log(discordEvent.name);
   } else {
     discordClient.on(discordEvent.name, (...args) => discordEvent.execute(...args));
-    // console.log(discordEvent.name);
   }
 }
 
@@ -231,7 +220,7 @@ for (const file of commandFiles) {
   if ("data" in command && "execute" in command) {
     discordClient.commands.set(command.data.name, command);
     const cLoadedDate = new Date().toLocaleString();
-    console.log('\x1b[34m%s\x1b[0m', `[${cLoadedDate.padEnd(23)}] 💻 COMAND| Command Loaded| ${command.data.name}`)
+    log.execute({ emoji: '💻', module: 'COMMAND', feature: "Command Loaded", message: command.data.name });
   } else {
     console.log(
       `⛔ [WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`

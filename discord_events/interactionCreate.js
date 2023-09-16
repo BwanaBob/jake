@@ -1,4 +1,5 @@
 const { Events, Component } = require("discord.js");
+const log = require("../modules/logger.js");
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -14,15 +15,13 @@ module.exports = {
         return;
       }
 
-      const logDate = new Date(interaction.createdTimestamp).toLocaleString();
+      // const logDate = new Date(interaction.createdTimestamp).toLocaleString();
       if (!interaction.guild) {
-        console.log(
-          '\x1b[34m%s\x1b[0m', `[${logDate.padEnd(23)}] 💻 COMAND| Private Message | ${interaction.user.tag} | ${interaction.commandName}`
-        );
+        log.execute({ emoji: '💻', module: 'COMMAND', feature: interaction.commandName, userName: interaction.user.username, nickname: interaction.member.nickname, message: "Private Message" });
+
       } else {
-        console.log(
-          '\x1b[34m%s\x1b[0m', `[${logDate.padEnd(23)}] 💻 COMAND| ${interaction.guild.name} | ${interaction.channel.name} | ${interaction.member.displayName} (${interaction.user.tag}) | ${interaction.commandName}`
-        );
+        console.log(interaction.member);
+        log.execute({ emoji: '💻', module: 'COMMAND', feature: interaction.commandName, userName: interaction.user.username, nickname: interaction.member.nickname, guild: interaction.guild.name, channel: interaction.channel.name });
       }
 
       try {

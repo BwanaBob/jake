@@ -1,18 +1,16 @@
 const { Events, ActivityType } = require("discord.js");
 const fs = require("node:fs");
 const path = require("node:path");
+const log = require("../modules/logger.js");
 
 module.exports = {
   name: Events.ClientReady,
   once: true,
   execute(client) {
-    var startDate = new Date();
-    console.log(
-      '\x1b[34m%s\x1b[0m', `[${startDate.toLocaleString().padEnd(23)}] 🤖 START | Bot Logged In | ${client.user.username} (${client.user.tag})`
-    );
+    log.execute({ emoji: '🤖', module: 'READY', feature: 'Bot Logged In', message: `${client.user.username} (${client.user.tag})` });
 
     client.guilds.cache.forEach((guild) => {
-      console.log('\x1b[34m%s\x1b[0m', `[${startDate.toLocaleString().padEnd(23)}] 🖥️  GUILD | Guild Joined  | ${guild.name} (${guild.memberCount})`);
+      log.execute({ emoji: '🖥️ ', module: 'READY', feature: 'Guild Joined', message: `${guild.name} (${guild.memberCount})` });
     });
 
     client.user.setPresence({

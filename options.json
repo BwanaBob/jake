@@ -6,8 +6,29 @@
     "commentPollTime": 7000,
     "commentLimit": 15,
     "subreddits": {
-        "OnPatrolLive":    { "channelId":"1121307801453596722", "streamComments": true, "streamSubmissions": true},
-        "LAFireandRescue": { "channelId":"1121279878570967040", "streamComments": true, "streamSubmissions": true },
-        "OPLTesting":      { "channelId":"1121273754857775114", "streamComments": true, "streamSubmissions": true }
+        "OnPatrolLive": {
+            "channelId": "1121307801453596722",
+            "streamComments": true,
+            "streamSubmissions": true
+        },
+        "LAFireandRescue": {
+            "channelId": "1121279878570967040",
+            "streamComments": true,
+            "streamSubmissions": true
+        },
+        "OPLTesting": {
+            "channelId": "1121273754857775114",
+            "streamComments": true,
+            "streamSubmissions": true
+        }
+    },
+    "logger": {
+        "logLength": 120,
+        "dateLength": 23,
+        "moduleLength": 7,
+        "featureLength": 15,
+        "userLength": 15,
+        "guildLength": 12,
+        "channelLength": 15
     }
 }
