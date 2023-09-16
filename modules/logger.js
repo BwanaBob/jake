@@ -17,7 +17,6 @@ module.exports = {
         if (log.channel) { logString += `${log.channel.slice(0, options.logger.channelLength).padEnd(options.logger.channelLength)} | ` };
 
         if (log.userName || log.nickname) {
-            console.log(log.userName, log.nickname)
             var userString = "";
             if (log.userName && log.nickname) {
                 userString = `${log.nickname}/${log.userName}`
