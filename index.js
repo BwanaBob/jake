@@ -24,20 +24,30 @@ const redditClient = new Snoowrap({
 
 var streamChannel = "";
 const connectedAt = Date.now() / 1000;
+var knownAvatars = {};
 
 async function getAvatar(username) {
   var returnURL = 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_7.png';
-  try {
-    returnURL = await fetch(`https://api.reddit.com/user/${username}/about`)
-      .then(response => response.json())
-      .then(data => {
-        const returnAvatar = data.data.icon_img.replace(/&amp;/g, '&') || data.data.snoovatar_img.replace(/&amp;/g, '&') || defaultImage;
-        return returnAvatar;
-      })
-  } catch (err) {
-    console.error(err);
+  var cached = false;
+  if (knownAvatars[username]) {
+    returnURL = knownAvatars[username];
+    cached = true;
+  } else {
+    try {
+      returnURL = await fetch(`https://api.reddit.com/user/${username}/about`)
+        .then(response => response.json())
+        .then(data => {
+          const returnAvatar = data.data.icon_img.replace(/&amp;/g, '&') || data.data.snoovatar_img.replace(/&amp;/g, '&') || "unknown";
+          if (returnAvatar !== "unknown") {
+            knownAvatars[username] = returnAvatar;
+          }
+          return returnAvatar;
+        })
+    } catch (err) {
+      console.error(err);
+    }
   }
-  return returnURL;
+  return { url: returnURL, cached: cached };
 }
 
 const comments = new CommentStream(redditClient, {
@@ -60,7 +70,7 @@ comments.on("item", async comment => {
       .setAuthor({
         name: comment.author.name,
         url: `https://www.reddit.com${comment.permalink}`,
-        iconURL: avatarURL,
+        iconURL: avatarURL.url,
       })
       // .addFields({
       //   name: "Avatar",
@@ -75,7 +85,7 @@ comments.on("item", async comment => {
       .setAuthor({
         name: comment.author.name,
         url: `https://www.reddit.com${comment.permalink}`,
-        iconURL: avatarURL,
+        iconURL: avatarURL.url,
       })
       .setDescription(`${comment.body.slice(0, 500)}`);
   }
@@ -84,8 +94,9 @@ comments.on("item", async comment => {
     .get(streamChannel)
     .send({ embeds: [discordEmbed] })
     .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
-
-  log.execute({ emoji: "💬", guild: comment.subreddit.display_name, userName: comment.author.name, message: comment.body});
+    var userEmoji = "📡";
+    if (avatarURL.cached) { userEmoji = "👤"; }
+  log.execute({ emoji: "💬", guild: comment.subreddit.display_name, userName: `${userEmoji} ${comment.author.name}`, message: comment.body });
 
 });
 
@@ -108,43 +119,43 @@ submissions.on("item", async post => {
       .setAuthor({
         name: `${post.author.name}`,
         url: `https://www.reddit.com${post.permalink}`,
-        iconURL: avatarURL
+        iconURL: avatarURL.url
       })
-      // .addFields({
-      //   name: "Self",
-      //   value: `${post.is_self}`,
-      //   inline: true,
-      // })
-      // .addFields({
-      //   name: "Original",
-      //   value: `${post.is_original_content}`,
-      //   inline: true,
-      // })
-      // .addFields({
-      //   name: "Video",
-      //   value: `${post.is_video}`,
-      //   inline: true,
-      // })
-      // .addFields({
-      //   name: "Meta",
-      //   value: `${post.is_meta}`,
-      //   inline: true,
-      // })
-      // .addFields({
-      //   name: "post hint",
-      //   value: `${post.post_hint || "none"}`,
-      //   inline: true,
-      // })
-      // .addFields({
-      //   name: "Categories",
-      //   value: `${post.content_categories || "none"}`,
-      //   inline: false,
-      // })
-      // .addFields({
-      //   name: "Id",
-      //   value: `${post.id}`,
-      //   inline: false,
-      // })
+    // .addFields({
+    //   name: "Self",
+    //   value: `${post.is_self}`,
+    //   inline: true,
+    // })
+    // .addFields({
+    //   name: "Original",
+    //   value: `${post.is_original_content}`,
+    //   inline: true,
+    // })
+    // .addFields({
+    //   name: "Video",
+    //   value: `${post.is_video}`,
+    //   inline: true,
+    // })
+    // .addFields({
+    //   name: "Meta",
+    //   value: `${post.is_meta}`,
+    //   inline: true,
+    // })
+    // .addFields({
+    //   name: "post hint",
+    //   value: `${post.post_hint || "none"}`,
+    //   inline: true,
+    // })
+    // .addFields({
+    //   name: "Categories",
+    //   value: `${post.content_categories || "none"}`,
+    //   inline: false,
+    // })
+    // .addFields({
+    //   name: "Id",
+    //   value: `${post.id}`,
+    //   inline: false,
+    // })
   } else {
     discordEmbed = new EmbedBuilder()
       .setColor(0xea0027)
@@ -152,7 +163,7 @@ submissions.on("item", async post => {
       .setAuthor({
         name: `${post.author.name}`,
         url: `https://www.reddit.com${post.permalink}`,
-        iconURL: avatarURL
+        iconURL: avatarURL.url
       })
   }
 
@@ -181,8 +192,10 @@ submissions.on("item", async post => {
     .send({ embeds: [discordEmbed] })
     .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
 
-  log.execute({ emoji: postEmoji, guild: post.subreddit.display_name, userName: post.author.name, message: post.title});
- 
+    var userEmoji = "📡";
+    if (avatarURL.cached) { userEmoji = "👤"; }
+    log.execute({ emoji: postEmoji, guild: post.subreddit.display_name, userName: `${userEmoji} ${post.author.name}`, message: post.title });
+
 });
 
 // Reddit events handler - TBD

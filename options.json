@@ -23,7 +23,7 @@
         }
     },
     "logger": {
-        "logLength": 120,
+        "logLength": 140,
         "dateLength": 23,
         "moduleLength": 7,
         "featureLength": 15,
