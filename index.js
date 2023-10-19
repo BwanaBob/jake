@@ -87,7 +87,7 @@ comments.on("item", async comment => {
         url: `https://www.reddit.com${comment.permalink}`,
         iconURL: avatarURL.url,
       })
-      .setDescription(`${comment.body.slice(0, 500)}`);
+      .setDescription(`${comment.body.slice(0, options.commentSize)}`);
   }
 
   discordClient.channels.cache
