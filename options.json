@@ -5,6 +5,7 @@
     "commentSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",
     "commentPollTime": 7000,
     "commentLimit": 15,
+    "commentSize": 1000,
     "subreddits": {
         "OnPatrolLive": {
             "channelId": "1121307801453596722",

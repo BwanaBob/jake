@@ -77,7 +77,7 @@ comments.on("item", async comment => {
       //   value: `${avatarURL}`,
       //   inline: true,
       // })
-      .setDescription(`${comment.body.slice(0, 500)}`);
+      .setDescription(`${comment.body.slice(0, options.commentSize)}`);
   } else {
     discordEmbed = new EmbedBuilder()
       .setColor(0x0079d3)
