@@ -1,4 +1,4 @@
-const { CommentStream, SubmissionStream } = require("snoostorm");
+const { CommentStream, SubmissionStream, ModQueueStream } = require("snoostorm");
 const Snoowrap = require("snoowrap");
 require("dotenv").config();
 const fs = require("node:fs");
@@ -24,6 +24,7 @@ const redditClient = new Snoowrap({
 });
 
 var streamChannel = "";
+var modPing = "";
 const connectedAt = Date.now() / 1000;
 
 const comments = new CommentStream(redditClient, {
@@ -70,8 +71,8 @@ comments.on("item", async comment => {
     .get(streamChannel)
     .send({ embeds: [discordEmbed] })
     .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
-    var userEmoji = "📡";
-    if (avatarURL.cached) { userEmoji = "👤"; }
+  var userEmoji = "📡";
+  if (avatarURL.cached) { userEmoji = "👤"; }
   log.execute({ emoji: "💬", guild: comment.subreddit.display_name, userName: `${userEmoji} ${comment.author.name}`, message: comment.body });
 
 });
@@ -168,9 +169,136 @@ submissions.on("item", async post => {
     .send({ embeds: [discordEmbed] })
     .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
 
-    var userEmoji = "📡";
-    if (avatarURL.cached) { userEmoji = "👤"; }
-    log.execute({ emoji: postEmoji, guild: post.subreddit.display_name, userName: `${userEmoji} ${post.author.name}`, message: post.title });
+  var userEmoji = "📡";
+  if (avatarURL.cached) { userEmoji = "👤"; }
+  log.execute({ emoji: postEmoji, guild: post.subreddit.display_name, userName: `${userEmoji} ${post.author.name}`, message: post.title });
+
+});
+
+
+const modQueue = new ModQueueStream(redditClient, {
+  subreddit: options.modQueueSubs,
+  limit: options.modQueueLimit,
+  pollTime: options.modQueuePollTime,
+});
+
+modQueue.on("item", async queueItem => {
+  // console.log((queueItem));
+  if (connectedAt > queueItem.created_utc) return;
+  modPing = options.subreddits[queueItem.subreddit.display_name].modQueueNotifyRole || false;
+  streamChannel = options.subreddits[queueItem.subreddit.display_name].channelId || false;
+  if (!streamChannel) { return; }      //
+  const avatarURL = await users.getAvatar(queueItem.author.name);
+  const bannedByUser = await queueItem.banned_by.name || "Reddit";
+  switch (queueItem.constructor.name) {
+    case "Comment":
+      var discordEmbed = new EmbedBuilder()
+      discordEmbed = new EmbedBuilder()
+        .setColor(0x7900d3)
+        .setTitle("Mod Queue Comment")
+        .setURL(`https://www.reddit.com${queueItem.permalink}`)
+        .setAuthor({
+          name: queueItem.author.name,
+          url: `https://www.reddit.com${queueItem.permalink}`,
+          iconURL: avatarURL.url,
+        })
+        .addFields({
+          name: "Banned By",
+          value: `${bannedByUser}`,
+          inline: true,
+        })
+        .addFields({
+          name: "Ban Note",
+          value: `${queueItem.ban_note}`,
+          inline: true,
+        })
+        .addFields({
+          name: "Removed",
+          value: `${queueItem.removed}`,
+          inline: true,
+        })
+        .addFields({
+          name: "Removal Reason",
+          value: `${queueItem.removal_reason}`,
+          inline: true,
+        })
+        .setDescription(`${queueItem.body.slice(0, options.commentSize)}`);
+
+      if (modPing) {
+        discordClient.channels.cache
+          .get(streamChannel)
+          .send({ embeds: [discordEmbed], content: `<@&${modPing}>` })
+          .catch(err => { console.error(`[ERROR] Sending message ${message.id} -`, err.message); });
+      } else {
+        discordClient.channels.cache
+          .get(streamChannel)
+          .send({ embeds: [discordEmbed] })
+          .catch(err => { console.error(`[ERROR] Sending message ${message.id} -`, err.message); });
+      }
+      var userEmoji = "📡";
+      if (avatarURL.cached) { userEmoji = "👤"; }
+      log.execute({ emoji: "✅", guild: queueItem.subreddit.display_name, userName: `${userEmoji} ${queueItem.author.name}`, message: queueItem.body });
+      break;
+    case "Submission":
+      var discordEmbed = new EmbedBuilder()
+      discordEmbed = new EmbedBuilder()
+        .setColor(0x7900d3)
+        .setTitle("Mod Queue Post")
+        .setURL(`https://www.reddit.com${queueItem.permalink}`)
+        .setAuthor({
+          name: queueItem.author.name,
+          url: `https://www.reddit.com${queueItem.permalink}`,
+          iconURL: avatarURL.url,
+        })
+        .addFields({
+          name: "Banned By",
+          value: `${bannedByUser}`,
+          inline: true,
+        })
+        .addFields({
+          name: "Ban Note",
+          value: `${queueItem.ban_note}`,
+          inline: true,
+        })
+        .addFields({
+          name: "Removed",
+          value: `${queueItem.removed}`,
+          inline: true,
+        })
+        .addFields({
+          name: "Removal Reason",
+          value: `${queueItem.removal_reason}`,
+          inline: true,
+        })
+        .addFields({
+          name: "Removal By Category",
+          value: `${queueItem.removed_by_category}`,
+          inline: true,
+        })
+        .addFields({
+          name: "Spam",
+          value: `${queueItem.spam}`,
+          inline: true,
+        })
+        .setDescription(`${queueItem.title}`);
+
+      if (modPing) {
+        discordClient.channels.cache
+          .get(streamChannel)
+          .send({ embeds: [discordEmbed], content: `<@&${modPing}>` })
+          .catch(err => { console.error(`[ERROR] Sending message ${message.id} -`, err.message); });
+      } else {
+        discordClient.channels.cache
+          .get(streamChannel)
+          .send({ embeds: [discordEmbed] })
+          .catch(err => { console.error(`[ERROR] Sending message ${message.id} -`, err.message); });
+      }
+      var userEmoji = "📡";
+      if (avatarURL.cached) { userEmoji = "👤"; }
+      log.execute({ emoji: "✅", guild: queueItem.subreddit.display_name, userName: `${userEmoji} ${queueItem.author.name}`, message: queueItem.title });
+      break;
+
+  }
 
 });
 
