@@ -1,10 +1,10 @@
 {
     "submissionSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",
     "submissionPollTime": 27000,
-    "submissionLimit": 5,
+    "submissionLimit": 10,
     "commentSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",
     "commentPollTime": 7000,
-    "commentLimit": 15,
+    "commentLimit": 20,
     "commentSize": 1000,
     "subreddits": {
         "OnPatrolLive": {

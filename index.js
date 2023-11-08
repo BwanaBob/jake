@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const options = require("./options.json");
 const log = require("./modules/logger.js");
+const users = require("./modules/users.js");
 
 const { Client, GatewayIntentBits, EmbedBuilder, Collection } = require("discord.js");
 const discordClient = new Client({
@@ -24,31 +25,6 @@ const redditClient = new Snoowrap({
 
 var streamChannel = "";
 const connectedAt = Date.now() / 1000;
-var knownAvatars = {};
-
-async function getAvatar(username) {
-  var returnURL = 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_7.png';
-  var cached = false;
-  if (knownAvatars[username]) {
-    returnURL = knownAvatars[username];
-    cached = true;
-  } else {
-    try {
-      returnURL = await fetch(`https://api.reddit.com/user/${username}/about`)
-        .then(response => response.json())
-        .then(data => {
-          const returnAvatar = data.data.icon_img.replace(/&amp;/g, '&') || data.data.snoovatar_img.replace(/&amp;/g, '&') || "unknown";
-          if (returnAvatar !== "unknown") {
-            knownAvatars[username] = returnAvatar;
-          }
-          return returnAvatar;
-        })
-    } catch (err) {
-      console.error(err);
-    }
-  }
-  return { url: returnURL, cached: cached };
-}
 
 const comments = new CommentStream(redditClient, {
   subreddit: options.commentSubs,
@@ -61,7 +37,7 @@ comments.on("item", async comment => {
   streamChannel = options.subreddits[comment.subreddit.display_name].channelId || false;
   if (!streamChannel) { return; }
   var discordEmbed = new EmbedBuilder()
-  const avatarURL = await getAvatar(comment.author.name);
+  const avatarURL = await users.getAvatar(comment.author.name);
   if (streamChannel == "1121273754857775114") {
     // bot test channel
     discordEmbed = new EmbedBuilder()
@@ -111,7 +87,7 @@ submissions.on("item", async post => {
   if (!streamChannel) { return; }
 
   var discordEmbed = new EmbedBuilder()
-  const avatarURL = await getAvatar(post.author.name);
+  const avatarURL = await users.getAvatar(post.author.name);
   if (streamChannel == "1121273754857775114") { // bot test channel
     discordEmbed = new EmbedBuilder()
       .setColor(0xea0027)
