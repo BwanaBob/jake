@@ -2,13 +2,17 @@
     "submissionSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",
     "submissionPollTime": 27000,
     "submissionLimit": 10,
+    "submissionEmbedColor": "#2ecc71",
     "commentSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",
     "commentPollTime": 9000,
     "commentLimit": 20,
     "commentSize": 1000,
+    "commentEmbedColor": "#3498db",
     "modQueueSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",
     "modQueuePollTime": 15000,
     "modQueueLimit": 20,
+    "modQueueCommentEmbedColor": "#f1c40f",
+    "modQueuePostEmbedColor": "#e91e63",
     "subreddits": {
         "OnPatrolLive": {
             "channelId": "1121307801453596722",

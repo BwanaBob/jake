@@ -8,6 +8,7 @@ const log = require("./modules/logger.js");
 const users = require("./modules/users.js");
 
 const { Client, GatewayIntentBits, EmbedBuilder, Collection } = require("discord.js");
+const { runInThisContext } = require("node:vm");
 const discordClient = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -35,14 +36,17 @@ const comments = new CommentStream(redditClient, {
 
 comments.on("item", async comment => {
   if (connectedAt > comment.created_utc) return;
+  // console.log(comment.banned_at_utc == null);
   streamChannel = options.subreddits[comment.subreddit.display_name].channelId || false;
   if (!streamChannel) { return; }
   var discordEmbed = new EmbedBuilder()
   const avatarURL = await users.getAvatar(comment.author.name);
+  var thisCommentColor = options.commentEmbedColor;
+  if (comment.banned_at_utc != null) { thisCommentColor = options.modQueueCommentEmbedColor }
   if (streamChannel == "1121273754857775114") {
     // bot test channel
     discordEmbed = new EmbedBuilder()
-      .setColor(0x0079d3)
+      .setColor(thisCommentColor)
       .setURL(`https://www.reddit.com${comment.permalink}`)
       .setAuthor({
         name: comment.author.name,
@@ -57,7 +61,7 @@ comments.on("item", async comment => {
       .setDescription(`${comment.body.slice(0, options.commentSize)}`);
   } else {
     discordEmbed = new EmbedBuilder()
-      .setColor(0x0079d3)
+      .setColor(thisCommentColor)
       .setURL(`https://www.reddit.com${comment.permalink}`)
       .setAuthor({
         name: comment.author.name,
@@ -91,7 +95,7 @@ submissions.on("item", async post => {
   const avatarURL = await users.getAvatar(post.author.name);
   if (streamChannel == "1121273754857775114") { // bot test channel
     discordEmbed = new EmbedBuilder()
-      .setColor(0xea0027)
+      .setColor(options.submissionEmbedColor)
       .setURL(`https://www.reddit.com${post.permalink}`)
       .setAuthor({
         name: `${post.author.name}`,
@@ -135,7 +139,7 @@ submissions.on("item", async post => {
     // })
   } else {
     discordEmbed = new EmbedBuilder()
-      .setColor(0xea0027)
+      .setColor(options.submissionEmbedColor)
       .setURL(`https://www.reddit.com${post.permalink}`)
       .setAuthor({
         name: `${post.author.name}`,
@@ -167,7 +171,7 @@ submissions.on("item", async post => {
   discordClient.channels.cache
     .get(streamChannel)
     .send({ embeds: [discordEmbed] })
-    .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
+    .catch(err => { console.error(`[ERROR] Sending message ${message.id} -`, err.message); });
 
   var userEmoji = "📡";
   if (avatarURL.cached) { userEmoji = "👤"; }
@@ -187,20 +191,36 @@ modQueue.on("item", async queueItem => {
   if (connectedAt > queueItem.created_utc) return;
   modPing = options.subreddits[queueItem.subreddit.display_name].modQueueNotifyRole || false;
   streamChannel = options.subreddits[queueItem.subreddit.display_name].channelId || false;
+  debugChannel = options.subreddits["OPLTesting"].channelId || false;
   if (!streamChannel) { return; }      //
   const avatarURL = await users.getAvatar(queueItem.author.name);
-  const bannedByUser = await queueItem.banned_by.name || "Reddit";
+  const bannedByUser = await queueItem.banned_by?.name || "Unknown";
   switch (queueItem.constructor.name) {
     case "Comment":
       var discordEmbed = new EmbedBuilder()
-      discordEmbed = new EmbedBuilder()
-        .setColor(0x7900d3)
+        .setColor(options.modQueueCommentEmbedColor)
         .setTitle("Mod Queue Comment")
         .setURL(`https://www.reddit.com${queueItem.permalink}`)
         .setAuthor({
           name: queueItem.author.name,
           url: `https://www.reddit.com${queueItem.permalink}`,
           iconURL: avatarURL.url,
+        })
+        .setDescription(`${queueItem.body.slice(0, options.commentSize)}`);
+
+      var debugEmbed = new EmbedBuilder()
+        .setColor(options.modQueueCommentEmbedColor)
+        .setTitle("Mod Queue Comment")
+        .setURL(`https://www.reddit.com${queueItem.permalink}`)
+        .setAuthor({
+          name: queueItem.author.name,
+          url: `https://www.reddit.com${queueItem.permalink}`,
+          iconURL: avatarURL.url,
+        })
+        .addFields({
+          name: "Subreddit",
+          value: `${queueItem.subreddit_name_prefixed}`,
+          inline: true,
         })
         .addFields({
           name: "Banned By",
@@ -222,6 +242,11 @@ modQueue.on("item", async queueItem => {
           value: `${queueItem.removal_reason}`,
           inline: true,
         })
+        .addFields({
+          name: "Spam",
+          value: `${queueItem.spam}`,
+          inline: true,
+        })
         .setDescription(`${queueItem.body.slice(0, options.commentSize)}`);
 
       if (modPing) {
@@ -235,20 +260,40 @@ modQueue.on("item", async queueItem => {
           .send({ embeds: [discordEmbed] })
           .catch(err => { console.error(`[ERROR] Sending message ${message.id} -`, err.message); });
       }
+      discordClient.channels.cache
+        .get(debugChannel)
+        .send({ embeds: [debugEmbed] })
+        .catch(err => { console.error(`[ERROR] Sending message ${message.id} -`, err.message); });
+
       var userEmoji = "📡";
       if (avatarURL.cached) { userEmoji = "👤"; }
       log.execute({ emoji: "✅", guild: queueItem.subreddit.display_name, userName: `${userEmoji} ${queueItem.author.name}`, message: queueItem.body });
       break;
     case "Submission":
       var discordEmbed = new EmbedBuilder()
-      discordEmbed = new EmbedBuilder()
-        .setColor(0x7900d3)
+        .setColor(options.modQueuePostEmbedColor)
         .setTitle("Mod Queue Post")
         .setURL(`https://www.reddit.com${queueItem.permalink}`)
         .setAuthor({
           name: queueItem.author.name,
           url: `https://www.reddit.com${queueItem.permalink}`,
           iconURL: avatarURL.url,
+        })
+        .setDescription(`${queueItem.title}`);
+
+      var debugEmbed = new EmbedBuilder()
+        .setColor(options.modQueuePostEmbedColor)
+        .setTitle("Mod Queue Post")
+        .setURL(`https://www.reddit.com${queueItem.permalink}`)
+        .setAuthor({
+          name: queueItem.author.name,
+          url: `https://www.reddit.com${queueItem.permalink}`,
+          iconURL: avatarURL.url,
+        })
+        .addFields({
+          name: "Subreddit",
+          value: `${queueItem.subreddit_name_prefixed}`,
+          inline: true,
         })
         .addFields({
           name: "Banned By",
@@ -293,6 +338,11 @@ modQueue.on("item", async queueItem => {
           .send({ embeds: [discordEmbed] })
           .catch(err => { console.error(`[ERROR] Sending message ${message.id} -`, err.message); });
       }
+      discordClient.channels.cache
+        .get(debugChannel)
+        .send({ embeds: [debugEmbed] })
+        .catch(err => { console.error(`[ERROR] Sending message ${message.id} -`, err.message); });
+
       var userEmoji = "📡";
       if (avatarURL.cached) { userEmoji = "👤"; }
       log.execute({ emoji: "✅", guild: queueItem.subreddit.display_name, userName: `${userEmoji} ${queueItem.author.name}`, message: queueItem.title });
@@ -302,10 +352,6 @@ modQueue.on("item", async queueItem => {
 
 });
 
-// Reddit events handler - TBD
-// const redditSubmissionEvent = require("./reddit_events/submissions.js");
-// redditClient.on(discordEvent.name, (...args) => discordEvent.execute(...args));
-// submissions.on("item", async post => {
 
 // Discord events handler
 const discordEventsPath = path.join(__dirname, "discord_events");
