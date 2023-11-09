@@ -6,7 +6,7 @@
     "commentPollTime": 9000,
     "commentLimit": 20,
     "commentSize": 1000,
-    "modQueueSubs": "OPLTesting",
+    "modQueueSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",
     "modQueuePollTime": 15000,
     "modQueueLimit": 20,
     "subreddits": {
