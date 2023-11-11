@@ -39,10 +39,11 @@ comments.on("item", async comment => {
   // console.log(comment.banned_at_utc == null);
   streamChannel = options.subreddits[comment.subreddit.display_name].channelId || false;
   if (!streamChannel) { return; }
+  var thisCommentColor = options.commentEmbedColor;
+  if (comment.banned_at_utc != null && comment.spam) { thisCommentColor = options.spamCommentEmbedColor }
+  if (comment.banned_at_utc != null && !comment.spam) { return; } // these should be shown by the modqueue function
   var discordEmbed = new EmbedBuilder()
   const avatarURL = await users.getAvatar(comment.author.name);
-  var thisCommentColor = options.commentEmbedColor;
-  if (comment.banned_at_utc != null) { thisCommentColor = options.modQueueCommentEmbedColor }
   if (streamChannel == "1121273754857775114") {
     // bot test channel
     discordEmbed = new EmbedBuilder()

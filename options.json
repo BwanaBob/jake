@@ -8,6 +8,7 @@
     "commentLimit": 20,
     "commentSize": 1000,
     "commentEmbedColor": "#3498db",
+    "spamCommentEmbedColor": "#ff0000",
     "modQueueSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",
     "modQueuePollTime": 15000,
     "modQueueLimit": 20,
