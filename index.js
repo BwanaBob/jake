@@ -42,6 +42,7 @@ comments.on("item", async comment => {
   var thisCommentColor = options.commentEmbedColor;
   if (comment.banned_at_utc != null && comment.spam) { thisCommentColor = options.spamCommentEmbedColor }
   if (comment.banned_at_utc != null && !comment.spam) { return; } // these should be shown by the modqueue function
+  // Check removed_by_category ! maybe action_reason
   var discordEmbed = new EmbedBuilder()
   const avatarURL = await users.getAvatar(comment.author.name);
   if (streamChannel == "1121273754857775114") {
@@ -75,7 +76,7 @@ comments.on("item", async comment => {
   discordClient.channels.cache
     .get(streamChannel)
     .send({ embeds: [discordEmbed] })
-    .catch(err => { console.error(`[ERROR] Relpying to message ${message.id} -`, err.message); });
+    .catch(err => { console.error(`[ERROR] Sending message ${message.id} -`, err.message); });
   var userEmoji = "📡";
   if (avatarURL.cached) { userEmoji = "👤"; }
   log.execute({ emoji: "💬", guild: comment.subreddit.display_name, userName: `${userEmoji} ${comment.author.name}`, message: comment.body });
@@ -201,7 +202,7 @@ modQueue.on("item", async queueItem => {
       var discordEmbed = new EmbedBuilder()
         .setColor(options.modQueueCommentEmbedColor)
         .setTitle("Mod Queue Comment")
-        .setURL(`https://www.reddit.com${queueItem.permalink}`)
+        .setURL(`https://www.reddit.com/r/OnPatrolLive/about/modqueue`)
         .setAuthor({
           name: queueItem.author.name,
           url: `https://www.reddit.com${queueItem.permalink}`,
@@ -212,7 +213,7 @@ modQueue.on("item", async queueItem => {
       var debugEmbed = new EmbedBuilder()
         .setColor(options.modQueueCommentEmbedColor)
         .setTitle("Mod Queue Comment")
-        .setURL(`https://www.reddit.com${queueItem.permalink}`)
+        .setURL(`https://www.reddit.com/r/OnPatrolLive/about/modqueue`)
         .setAuthor({
           name: queueItem.author.name,
           url: `https://www.reddit.com${queueItem.permalink}`,
@@ -274,7 +275,7 @@ modQueue.on("item", async queueItem => {
       var discordEmbed = new EmbedBuilder()
         .setColor(options.modQueuePostEmbedColor)
         .setTitle("Mod Queue Post")
-        .setURL(`https://www.reddit.com${queueItem.permalink}`)
+        .setURL(`https://www.reddit.com/r/OnPatrolLive/about/modqueue`)
         .setAuthor({
           name: queueItem.author.name,
           url: `https://www.reddit.com${queueItem.permalink}`,
@@ -285,7 +286,7 @@ modQueue.on("item", async queueItem => {
       var debugEmbed = new EmbedBuilder()
         .setColor(options.modQueuePostEmbedColor)
         .setTitle("Mod Queue Post")
-        .setURL(`https://www.reddit.com${queueItem.permalink}`)
+        .setURL(`https://www.reddit.com/r/OnPatrolLive/about/modqueue`)
         .setAuthor({
           name: queueItem.author.name,
           url: `https://www.reddit.com${queueItem.permalink}`,
