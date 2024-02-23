@@ -1,6 +1,6 @@
 {
     "submissionSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",
-    "submissionPollTime": 27000,
+    "submissionPollTime": 7000,
     "submissionLimit": 10,
     "submissionEmbedColor": "#2ecc71",
     "commentSubs": "OnPatrolLive+LAFireandRescue+OPLTesting",

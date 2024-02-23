@@ -1,0 +1,26 @@
+
+import { Poll } from "snoostorm"
+
+export interface FriendStreamOptions {
+  pollTime?: number;
+}
+
+export class FriendStream extends Poll<Snoowrap.RedditUser> {
+  constructor(
+    client: Snoowrap,
+    options: FriendStreamOptions = { pollTime: 2000 }
+  ) {
+    super({
+      frequency: options.pollTime,
+      get: () => client.getFriends(),
+      identifier: "name",
+    });
+  }
+}
+
+const friends = new FriendStream(client);
+
+friends.on("item", (item) => {
+  console.log("New Friend!", item.name);
+});
+
